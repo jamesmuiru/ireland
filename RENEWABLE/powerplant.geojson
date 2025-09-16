@@ -1,0 +1,22 @@
+{
+"type": "FeatureCollection",
+"name": "powerplant",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "OBJECTID": 1, "FCsubtype": 1, "NAMN1": "West Offaly" }, "geometry": { "type": "Point", "coordinates": [ -8.04497749995071, 53.275789499603853 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 2, "FCsubtype": 1, "NAMN1": "Ardnacrusha " }, "geometry": { "type": "Point", "coordinates": [ -8.6150984994607, 52.703712500210806 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 3, "FCsubtype": 1, "NAMN1": "Tarbert" }, "geometry": { "type": "Point", "coordinates": [ -9.371242999921135, 52.588538500400539 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 4, "FCsubtype": 1, "NAMN1": "Moneypoint" }, "geometry": { "type": "Point", "coordinates": [ -9.411303499934863, 52.608568500232863 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 5, "FCsubtype": 1, "NAMN1": "Lee" }, "geometry": { "type": "Point", "coordinates": [ -8.660166499511625, 51.897492500418068 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 6, "FCsubtype": 1, "NAMN1": "Marina" }, "geometry": { "type": "Point", "coordinates": [ -8.439832999758572, 51.902500000017781 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 7, "FCsubtype": 1, "NAMN1": "Aghada" }, "geometry": { "type": "Point", "coordinates": [ -8.234522499879976, 51.832393999872338 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 8, "FCsubtype": 1, "NAMN1": "Great Island" }, "geometry": { "type": "Point", "coordinates": [ -6.987634999732303, 52.283075999779093 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 9, "FCsubtype": 1, "NAMN1": "Liffey" }, "geometry": { "type": "Point", "coordinates": [ -6.592036500535955, 53.119342000148777 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 10, "FCsubtype": 1, "NAMN1": "Turlough Hill" }, "geometry": { "type": "Point", "coordinates": [ -6.346664999251873, 53.009175000269046 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 11, "FCsubtype": 1, "NAMN1": "Poolbeg" }, "geometry": { "type": "Point", "coordinates": [ -6.192803999549227, 53.339856999984171 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 12, "FCsubtype": 1, "NAMN1": "North Wall" }, "geometry": { "type": "Point", "coordinates": [ -6.213485499546922, 53.350887500424982 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 13, "FCsubtype": 1, "NAMN1": "Clady" }, "geometry": { "type": "Point", "coordinates": [ -8.268449500406289, 55.032549999855135 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 14, "FCsubtype": 1, "NAMN1": "Erne" }, "geometry": { "type": "Point", "coordinates": [ -8.111428999821483, 54.490506000359353 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 15, "FCsubtype": 1, "NAMN1": "Lough Ree" }, "geometry": { "type": "Point", "coordinates": [ -7.983184999514194, 53.676649999895538 ] } }
+]
+}

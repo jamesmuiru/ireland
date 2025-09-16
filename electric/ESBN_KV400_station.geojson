@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "ESBN_KV400_station",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "OBJECTID": 1, "G3E_FID": 503886819, "VOLTAGE": "400 kV", "ST_NAME": "DUNSTOWN", "ST_NUMBER": "787000", "X_ITM": 687781.31379999965, "Y_ITM": 712331.47279999964, "X_WGS84": -6.68755962, "Y_WGS84": 53.15424356 }, "geometry": { "type": "Point", "coordinates": [ -6.687559617771657, 53.154243560316964 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 2, "G3E_FID": 503886846, "VOLTAGE": "400 kV", "ST_NAME": "WOODLAND", "ST_NUMBER": "810000", "X_ITM": 694955.13219999988, "Y_ITM": 748162.38470000029, "X_WGS84": -6.56961341, "Y_WGS84": 53.47492542 }, "geometry": { "type": "Point", "coordinates": [ -6.569613406318143, 53.474925424270197 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 3, "G3E_FID": 506374361, "VOLTAGE": "400 kV", "ST_NAME": "PORTAN", "ST_NUMBER": "873000", "X_ITM": 695145.31230000034, "Y_ITM": 747781.57410000078, "X_WGS84": -6.56686484, "Y_WGS84": 53.47146993 }, "geometry": { "type": "Point", "coordinates": [ -6.566864837331547, 53.471469933748914 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 4, "G3E_FID": 504117292, "VOLTAGE": "400 kV", "ST_NAME": "OLDSTREET", "ST_NUMBER": "948000", "X_ITM": 581964.0927, "Y_ITM": 709388.1361999996, "X_WGS84": -8.26953077, "Y_WGS84": 53.13471736 }, "geometry": { "type": "Point", "coordinates": [ -8.269530767163964, 53.134717358965467 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 5, "G3E_FID": 503886805, "VOLTAGE": "400 kV", "ST_NAME": "MONEYPOINT", "ST_NUMBER": "795000", "X_ITM": 503661.83370000031, "Y_ITM": 651980.69480000064, "X_WGS84": -9.42247376, "Y_WGS84": 52.61052413 }, "geometry": { "type": "Point", "coordinates": [ -9.422473756620695, 52.610524130467518 ] } }
+]
+}

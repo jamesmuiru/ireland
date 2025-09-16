@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ireland Energy Grid - Real Infrastructure</title>
+    
+    <!-- Leaflet CSS and JS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+            border-right: 1px solid #334155;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.2);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: white;
+        }
+
+        .header p {
+            font-size: 11px;
+            color: #e2e8f0;
+            opacity: 0.9;
+        }
+
+        .control-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+
+        .control-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #60a5fa;
+        }
+
+        .layer-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: rgba(51, 65, 85, 0.6);
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .layer-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        .layer-item.active {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+        }
+
+        .layer-item.loading {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid #f59e0b;
+        }
+
+        .layer-item.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+        }
+
+        .layer-label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .layer-status {
+            font-size: 9px;
+            margin-left: 8px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background: rgba(156, 163, 175, 0.2);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 35px;
+            height: 18px;
+            background: #475569;
+            border-radius: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background: #10b981;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 14px;
+            height: 14px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 19px;
+        }
+
+        .stats-container {
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            border: 1px solid #475569;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid #334155;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .stat-value {
+            font-size: 11px;
+            font-weight: 600;
+            color: #10b981;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #475569;
+            min-width: 200px;
+            z-index: 1000;
+        }
+
+        .legend h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #60a5fa;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 10px;
+        }
+
+        .legend-color {
+            width: 18px;
+            height: 10px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            color: #10b981;
+            display: none;
+        }
+
+        .controls-toolbar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            padding: 8px 12px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: #3b82f6;
+        }
+
+        .control-btn.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        .error-message {
+            position: absolute;
+            top: 70px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 11px;
+            max-width: 300px;
+            display: none;
+        }
+
+        /* Custom Leaflet popup styling */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #475569;
+            border-radius: 8px;
+            color: #e2e8f0;
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 15px;
+            line-height: 1.4;
+        }
+
+        .popup-title {
+            font-weight: 600;
+            font-size: 13px;
+            color: #60a5fa;
+            margin-bottom: 8px;
+        }
+
+        .popup-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+
+        .popup-stat-label {
+            color: #94a3b8;
+        }
+
+        .popup-stat-value {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 35vh;
+                order: 2;
+            }
+            
+            .map-container {
+                height: 65vh;
+                order: 1;
+            }
+            
+            .legend {
+                bottom: 10px;
+                right: 10px;
+                min-width: 150px;
+                font-size: 9px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <h1>Ireland Energy Grid</h1>
+                <p>Real electrical infrastructure & renewable energy data</p>
+            </div>
+
+            <div class="control-section">
+                <h3>Transmission Network</h3>
+                <div class="layer-item" data-layer="kv400-lines">
+                    <div>
+                        <span class="layer-label">400kV Transmission Lines</span>
+                        <span class="layer-status" id="status-kv400-lines"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv400-stations">
+                    <div>
+                        <span class="layer-label">400kV Stations</span>
+                        <span class="layer-status" id="status-kv400-stations"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv275-lines">
+                    <div>
+                        <span class="layer-label">275kV Transmission Lines</span>
+                        <span class="layer-status" id="status-kv275-lines"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv220-lines">
+                    <div>
+                        <span class="layer-label">220kV Lines</span>
+                        <span class="layer-status" id="status-kv220-lines"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv220-stations">
+                    <div>
+                        <span class="layer-label">220kV Stations</span>
+                        <span class="layer-status" id="status-kv220-stations"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv110-lines">
+                    <div>
+                        <span class="layer-label">110kV Distribution</span>
+                        <span class="layer-status" id="status-kv110-lines"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="kv110-stations">
+                    <div>
+                        <span class="layer-label">110kV Stations</span>
+                        <span class="layer-status" id="status-kv110-stations"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Generation & Interconnectors</h3>
+                <div class="layer-item" data-layer="power-generation">
+                    <div>
+                        <span class="layer-label">Power Generation Plants</span>
+                        <span class="layer-status" id="status-power-generation"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="wind-farms">
+                    <div>
+                        <span class="layer-label">Wind Farms</span>
+                        <span class="layer-status" id="status-wind-farms"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="renewable-plants">
+                    <div>
+                        <span class="layer-label">Renewable Power Plants</span>
+                        <span class="layer-status" id="status-renewable-plants"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="east-west">
+                    <div>
+                        <span class="layer-label">East-West Interconnector</span>
+                        <span class="layer-status" id="status-east-west"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="moyle">
+                    <div>
+                        <span class="layer-label">Moyle Interconnector</span>
+                        <span class="layer-status" id="status-moyle"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="potential">
+                    <div>
+                        <span class="layer-label">Hydro Potential</span>
+                        <span class="layer-status" id="status-potential"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+                <div class="layer-item" data-layer="boundaries">
+                    <div>
+                        <span class="layer-label">Administrative Boundaries</span>
+                        <span class="layer-status" id="status-boundaries"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Grid Analytics</h3>
+                <div class="layer-item" data-layer="heat-map">
+                    <div>
+                        <span class="layer-label">Heat Map Analysis</span>
+                        <span class="layer-status" id="status-heat-map"></span>
+                    </div>
+                    <div class="toggle-switch"></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Live Grid Statistics</h3>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <span class="stat-label">Grid Frequency</span>
+                        <span class="stat-value" id="frequency">50.01 Hz</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Demand</span>
+                        <span class="stat-value" id="demand">4,234 MW</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Wind Generation</span>
+                        <span class="stat-value" id="windGen">1,847 MW</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Renewable %</span>
+                        <span class="stat-value" id="renewablePct">44%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Interconnector Flow</span>
+                        <span class="stat-value" id="interconnector">-185 MW</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">CO₂ Intensity</span>
+                        <span class="stat-value" id="co2">267 g/kWh</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Last Updated</span>
+                        <span class="stat-value" id="lastUpdate">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="loading" id="loading">Loading grid data...</div>
+            
+            <div class="controls-toolbar">
+                <div class="control-btn" id="fitBounds">Fit to Ireland</div>
+                <div class="control-btn" id="clearAll">Clear All Layers</div>
+                <div class="control-btn" id="showAll">Show All Available</div>
+            </div>
+            
+            <div class="error-message" id="errorMessage"></div>
+            
+            <div class="legend">
+                <h4>Infrastructure Legend</h4>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #dc2626;"></div>
+                    <span>400kV Transmission</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f59e0b;"></div>
+                    <span>275kV/220kV Lines</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #10b981;"></div>
+                    <span>110kV Distribution</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #3b82f6;"></div>
+                    <span>Substations</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #8b5cf6;"></div>
+                    <span>Wind/Interconnectors</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #06b6d4;"></div>
+                    <span>Power Plants</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #ef4444;"></div>
+                    <span>Heat Map/Analytics</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class IrelandGridMap {
+            constructor() {
+                this.map = null;
+                this.layers = {};
+                this.layerGroups = {};
+                this.activeLayerControls = new Set();
+                this.loadingLayers = new Set();
+                this.errorLayers = new Set();
+                this.dataFiles = {
+                    'kv400-lines': 'electric/ESBN_KV400_Conductor.geojson',
+                    'kv400-stations': 'electric/ESBN_KV400_station.geojson',
+                    'kv275-lines': 'electric/ESBN_KV275_Conductor.geojson',
+                    'kv220-lines': 'electric/ESBN_KV220_Conductor.geojson',
+                    'kv220-stations': 'electric/ESBN_KV220_station.geojson',
+                    'kv110-lines': 'electric/ESBN_KV110_Conductor.geojson',
+                    'kv110-stations': 'electric/ESBN_KV110_station.geojson',
+                    'power-generation': 'electric/ROI Power Genertaion.geojson',
+                    'wind-farms': 'RENEWABLE/windfarm.geojson',
+                    'renewable-plants': 'RENEWABLE/powerplant.geojson',
+                    'east-west': 'electric/East-West_Interconnector.geojson',
+                    'moyle': 'electric/Moyle Interconnector.geojson',
+                    'heat-map': 'electric/Heat_Map_May.geojson',
+                    'potential': 'potential/POTENTIA_HYDRO.geojson',
+                    'boundaries': 'administrative_boundaries/ADMIN_AREA_IRELAND.geojson'
+                };
+                this.irelandBounds = [[51.222, -10.669], [55.636, -5.431]];
+                this.init();
+            }
+
+            async init() {
+                this.initMap();
+                this.setupEventListeners();
+                this.updateStats();
+                this.showMessage('Grid visualization initialized', 'info');
+            }
+
+initMap() {
+    // Initialize map centered on Ireland
+    this.map = L.map('map').setView([53.1424, -7.6921], 7);
+
+    // Define basemap layers
+    const esriImagery = L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community',
+            maxZoom: 19
+        }
+    );
+
+    const cartoDark = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }
+    );
+
+    const osm = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }
+    );
+
+    // Add Esri imagery as the default basemap
+    esriImagery.addTo(this.map);
+
+    // Add layer control for switching basemaps
+    L.control.layers({
+        "Esri World Imagery": esriImagery,
+        "Carto Dark": cartoDark,
+        "OpenStreetMap": osm
+    }).addTo(this.map);
+
+    // Add scale control
+    L.control.scale({
+        position: 'bottomleft',
+        metric: true,
+        imperial: false
+    }).addTo(this.map);
+
+    // Initialize layer groups for your datasets
+    Object.keys(this.dataFiles).forEach(layerType => {
+        this.layerGroups[layerType] = L.layerGroup();
+    });
+}
+
+
+            showMessage(message, type = 'info', duration = 3000) {
+                const errorEl = document.getElementById('errorMessage');
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+                errorEl.style.background = type === 'error' ? 'rgba(239, 68, 68, 0.9)' : 
+                                         type === 'success' ? 'rgba(16, 185, 129, 0.9)' :
+                                         'rgba(59, 130, 246, 0.9)';
+                
+                setTimeout(() => {
+                    errorEl.style.display = 'none';
+                }, duration);
+            }
+
+            updateLayerStatus(layerType, status, message = '') {
+                const statusEl = document.getElementById(`status-${layerType}`);
+                if (statusEl) {
+                    statusEl.textContent = message || status;
+                    statusEl.style.background = 
+                        status === 'loading' ? 'rgba(251, 191, 36, 0.3)' :
+                        status === 'error' ? 'rgba(239, 68, 68, 0.3)' :
+                        status === 'loaded' ? 'rgba(16, 185, 129, 0.3)' :
+                        'rgba(156, 163, 175, 0.2)';
+                }
+            }
+
+            async loadGeoJSONData(filePath, layerType) {
+                this.loadingLayers.add(layerType);
+                this.updateLayerStatus(layerType, 'loading', 'Loading...');
+                
+                try {
+                    // Try multiple potential paths for the file
+                    const possiblePaths = [
+                        filePath,
+                        `./${filePath}`,
+                        `data/${filePath}`,
+                        `./data/${filePath}`
+                    ];
+
+                    let response = null;
+                    let usedPath = '';
+
+                    for (const path of possiblePaths) {
+                        try {
+                            response = await fetch(path);
+                            if (response.ok) {
+                                usedPath = path;
+                                break;
+                            }
+                        } catch (e) {
+                            continue;
+                        }
+                    }
+
+                    if (!response || !response.ok) {
+                        throw new Error(`Failed to load ${layerType}: File not found in any expected location`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.features || data.features.length === 0) {
+                        throw new Error(`No features found in ${layerType} data`);
+                    }
+                    
+                    this.loadingLayers.delete(layerType);
+                    this.errorLayers.delete(layerType);
+                    this.updateLayerStatus(layerType, 'loaded', `${data.features.length} features`);
+                    
+                    return data;
+                } catch (error) {
+                    console.error(`Error loading ${layerType}:`, error);
+                    this.loadingLayers.delete(layerType);
+                    this.errorLayers.add(layerType);
+                    this.updateLayerStatus(layerType, 'error', 'Failed');
+                    this.showMessage(`Failed to load ${layerType}: ${error.message}`, 'error');
+                    return null;
+                }
+            }
+
+            getLineStyle(layerType, feature) {
+                const styles = {
+                    'kv400-lines': { color: '#dc2626', weight: 4, opacity: 0.9 },
+                    'kv275-lines': { color: '#f59e0b', weight: 3, opacity: 0.8 },
+                    'kv220-lines': { color: '#f59e0b', weight: 3, opacity: 0.8 },
+                    'kv110-lines': { color: '#10b981', weight: 2, opacity: 0.7 },
+                    'east-west': { color: '#8b5cf6', weight: 5, opacity: 1.0 },
+                    'moyle': { color: '#8b5cf6', weight: 5, opacity: 1.0 },
+                    'heat-map': { color: '#ef4444', weight: 2, opacity: 0.6, fillColor: '#ef4444', fillOpacity: 0.3 },
+                    'potential': { color: '#06b6d4', weight: 3, opacity: 0.8, fillColor: '#06b6d4', fillOpacity: 0.2 },
+                    'boundaries': { color: '#EF4444', weight: 3, opacity: 0.8, fillColor: 'transparent', fillOpacity: 0 }
+                };
+                return styles[layerType] || { color: '#64748b', weight: 2, opacity: 0.7 };
+            }
+
+            getPointStyle(layerType, feature) {
+                const styles = {
+                    'kv400-stations': { 
+                        radius: 8, fillColor: '#dc2626', color: '#7f1d1d', 
+                        weight: 2, opacity: 1, fillOpacity: 0.8 
+                    },
+                    'kv220-stations': { 
+                        radius: 6, fillColor: '#f59e0b', color: '#92400e', 
+                        weight: 2, opacity: 1, fillOpacity: 0.8 
+                    },
+                    'kv110-stations': { 
+                        radius: 4, fillColor: '#10b981', color: '#064e3b', 
+                        weight: 2, opacity: 1, fillOpacity: 0.8 
+                    },
+                    'power-generation': { 
+                        radius: 10, fillColor: '#06b6d4', color: '#0e7490', 
+                        weight: 2, opacity: 1, fillOpacity: 0.9 
+                    },
+                    'wind-farms': { 
+                        radius: 6, fillColor: '#8b5cf6', color: '#5b21b6', 
+                        weight: 2, opacity: 1, fillOpacity: 0.8 
+                    },
+                    'renewable-plants': { 
+                        radius: 8, fillColor: '#22c55e', color: '#15803d', 
+                        weight: 2, opacity: 1, fillOpacity: 0.8 
+                    }
+                };
+                return styles[layerType] || { 
+                    radius: 5, fillColor: '#64748b', color: '#334155', 
+                    weight: 2, opacity: 1, fillOpacity: 0.7 
+                };
+            }
+
+            createPopupContent(feature, layerType) {
+                const props = feature.properties;
+                let title = layerType.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                let content = `<div class="popup-title">${title}</div>`;
+                
+                // Add relevant properties based on layer type
+                const relevantProps = Object.keys(props).filter(key => 
+                    props[key] && 
+                    key !== 'geometry' && 
+                    typeof props[key] !== 'object'
+                ).slice(0, 8);
+
+                relevantProps.forEach(key => {
+                    content += `
+                        <div class="popup-stat">
+                            <span class="popup-stat-label">${key.replace(/_/g, ' ')}:</span>
+                            <span class="popup-stat-value">${props[key]}</span>
+                        </div>
+                    `;
+                });
+
+                if (relevantProps.length === 0) {
+                    content += `<div class="popup-stat"><span class="popup-stat-value">No additional data available</span></div>`;
+                }
+
+                return content;
+            }
+
+            async createLayer(layerType) {
+                if (this.layers[layerType]) {
+                    this.layerGroups[layerType].removeLayer(this.layers[layerType]);
+                }
+
+                const data = await this.loadGeoJSONData(this.dataFiles[layerType], layerType);
+                if (!data) return;
+
+                try {
+                    this.layers[layerType] = L.geoJSON(data, {
+                        style: (feature) => {
+                            if (feature.geometry.type.includes('LineString') || feature.geometry.type.includes('Polygon')) {
+                                return this.getLineStyle(layerType, feature);
+                            }
+                            return {};
+                        },
+                        pointToLayer: (feature, latlng) => {
+                            const style = this.getPointStyle(layerType, feature);
+                            return L.circleMarker(latlng, style);
+                        },
+                        onEachFeature: (feature, layer) => {
+                            layer.bindPopup(this.createPopupContent(feature, layerType));
+                            
+                            layer.on({
+                                mouseover: (e) => {
+                                    if (feature.geometry.type.includes('LineString')) {
+                                        e.target.setStyle({ weight: e.target.options.weight + 2 });
+                                    } else if (e.target.setRadius) {
+                                        e.target.setRadius(e.target.options.radius + 2);
+                                    }
+                                },
+                                mouseout: (e) => {
+                                    this.layers[layerType].resetStyle(e.target);
+                                },
+                                click: (e) => {
+                                    this.map.setView(e.latlng, Math.max(this.map.getZoom(), 10));
+                                }
+                            });
+                        }
+                    });
+
+                    // Add to layer group
+                    this.layerGroups[layerType].addLayer(this.layers[layerType]);
+
+                    // If layer is active, add to map
+                    if (this.activeLayerControls.has(layerType)) {
+                        this.layerGroups[layerType].addTo(this.map);
+                    }
+
+                    this.showMessage(`${layerType} layer loaded successfully (${data.features.length} features)`, 'success', 2000);
+                    
+                } catch (error) {
+                    console.error(`Error creating layer ${layerType}:`, error);
+                    this.showMessage(`Error creating ${layerType} layer: ${error.message}`, 'error');
+                    this.updateLayerStatus(layerType, 'error', 'Render failed');
+                }
+            }
+
+            setupEventListeners() {
+                // Layer toggle controls
+                document.querySelectorAll('.layer-item').forEach(item => {
+                    item.addEventListener('click', async (e) => {
+                        const layerType = item.dataset.layer;
+                        if (!layerType) return;
+                        
+                        const toggle = item.querySelector('.toggle-switch');
+                        const isActive = this.activeLayerControls.has(layerType);
+
+                        // Prevent multiple clicks while loading
+                        if (this.loadingLayers.has(layerType)) {
+                            this.showMessage(`${layerType} is still loading, please wait...`, 'info', 2000);
+                            return;
+                        }
+
+                        if (isActive) {
+                            // Deactivate layer
+                            this.activeLayerControls.delete(layerType);
+                            toggle.classList.remove('active');
+                            item.classList.remove('active');
+                            
+                            if (this.layerGroups[layerType]) {
+                                this.map.removeLayer(this.layerGroups[layerType]);
+                            }
+                            this.updateLayerStatus(layerType, '', '');
+                        } else {
+                            // Activate layer
+                            this.activeLayerControls.add(layerType);
+                            toggle.classList.add('active');
+                            item.classList.add('active');
+                            
+                            // Create layer if it doesn't exist
+                            if (!this.layers[layerType]) {
+                                await this.createLayer(layerType);
+                            } else {
+                                // Just add existing layer to map
+                                this.layerGroups[layerType].addTo(this.map);
+                                this.showMessage(`${layerType} layer activated`, 'success', 1500);
+                            }
+                        }
+                    });
+                });
+
+                // Toolbar controls
+                document.getElementById('fitBounds').addEventListener('click', () => {
+                    this.map.fitBounds(this.irelandBounds);
+                    this.showMessage('Map fitted to Ireland bounds', 'info', 1500);
+                });
+
+                document.getElementById('clearAll').addEventListener('click', () => {
+                    this.clearAllLayers();
+                    this.showMessage('All layers cleared', 'info', 1500);
+                });
+
+                document.getElementById('showAll').addEventListener('click', () => {
+                    this.showAllAvailableLayers();
+                });
+
+                // Map event listeners
+                this.map.on('zoomend', () => {
+                    this.updateLayerVisibility();
+                });
+
+                this.map.on('moveend', () => {
+                    // Update URL with current map state (could be implemented)
+                });
+            }
+
+            clearAllLayers() {
+                this.activeLayerControls.clear();
+                
+                // Remove all layers from map
+                Object.values(this.layerGroups).forEach(layerGroup => {
+                    this.map.removeLayer(layerGroup);
+                });
+
+                // Update UI
+                document.querySelectorAll('.layer-item').forEach(item => {
+                    const toggle = item.querySelector('.toggle-switch');
+                    toggle.classList.remove('active');
+                    item.classList.remove('active');
+                });
+
+                // Clear status indicators
+                Object.keys(this.dataFiles).forEach(layerType => {
+                    this.updateLayerStatus(layerType, '', '');
+                });
+            }
+
+            async showAllAvailableLayers() {
+                const confirmLoad = confirm('This will load all available layers. This may take some time and could impact performance. Continue?');
+                if (!confirmLoad) return;
+
+                this.showMessage('Loading all available layers...', 'info', 1000);
+                
+                for (const layerType of Object.keys(this.dataFiles)) {
+                    if (!this.activeLayerControls.has(layerType) && !this.loadingLayers.has(layerType)) {
+                        // Activate the layer in UI
+                        const item = document.querySelector(`[data-layer="${layerType}"]`);
+                        if (item) {
+                            const toggle = item.querySelector('.toggle-switch');
+                            this.activeLayerControls.add(layerType);
+                            toggle.classList.add('active');
+                            item.classList.add('active');
+                            
+                            // Load the layer (with a small delay to prevent overwhelming the browser)
+                            setTimeout(() => {
+                                if (!this.layers[layerType]) {
+                                    this.createLayer(layerType);
+                                } else {
+                                    this.layerGroups[layerType].addTo(this.map);
+                                }
+                            }, Object.keys(this.activeLayerControls).indexOf(layerType) * 500);
+                        }
+                    }
+                }
+            }
+
+            updateLayerVisibility() {
+                const zoom = this.map.getZoom();
+                
+                // Hide detailed layers at low zoom levels for performance
+                Object.entries(this.layerGroups).forEach(([layerType, layerGroup]) => {
+                    if (this.activeLayerControls.has(layerType)) {
+                        const shouldShow = this.shouldShowLayerAtZoom(layerType, zoom);
+                        
+                        if (shouldShow && !this.map.hasLayer(layerGroup)) {
+                            this.map.addLayer(layerGroup);
+                        } else if (!shouldShow && this.map.hasLayer(layerGroup)) {
+                            this.map.removeLayer(layerGroup);
+                        }
+                    }
+                });
+            }
+
+            shouldShowLayerAtZoom(layerType, zoom) {
+                // Define zoom thresholds for different layer types
+                const zoomThresholds = {
+                    'kv400-lines': 5,
+                    'kv275-lines': 6,
+                    'kv220-lines': 6,
+                    'kv110-lines': 8,
+                    'kv400-stations': 6,
+                    'kv220-stations': 7,
+                    'kv110-stations': 9,
+                    'boundaries': 5
+                };
+
+                return zoom >= (zoomThresholds[layerType] || 5);
+            }
+
+            updateStats() {
+                const updateTime = () => {
+                    const now = new Date();
+                    document.getElementById('lastUpdate').textContent = 
+                        now.toLocaleTimeString('en-IE', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                };
+
+                // Update timestamp immediately
+                updateTime();
+
+                // Simulate real-time grid statistics with more realistic variations
+                setInterval(() => {
+                    const baseFreq = 50.0;
+                    const baseDemand = 4234;
+                    const baseWind = 1847;
+                    
+                    // Time-based variations (higher demand during day)
+                    const hour = new Date().getHours();
+                    const demandMultiplier = 0.8 + 0.4 * Math.sin((hour - 6) * Math.PI / 12);
+                    
+                    // Add realistic variations with bounds
+                    const frequency = Math.max(49.8, Math.min(50.2, 
+                        baseFreq + (Math.random() - 0.5) * 0.1));
+                    document.getElementById('frequency').textContent = frequency.toFixed(2) + ' Hz';
+                    
+                    const demand = Math.round(baseDemand * demandMultiplier * (0.9 + Math.random() * 0.2));
+                    document.getElementById('demand').textContent = demand.toLocaleString() + ' MW';
+                    
+                    // Wind varies more dramatically
+                    const windCapacityFactor = 0.1 + Math.random() * 0.7;
+                    const wind = Math.round(baseWind * windCapacityFactor);
+                    document.getElementById('windGen').textContent = wind.toLocaleString() + ' MW';
+                    
+                    // Calculate renewable percentage (including other renewables)
+                    const otherRenewables = Math.round(200 + Math.random() * 300);
+                    const totalRenewables = wind + otherRenewables;
+                    const renewablePct = Math.round((totalRenewables / demand) * 100);
+                    document.getElementById('renewablePct').textContent = Math.min(95, renewablePct) + '%';
+                    
+                    // Interconnector flow (positive = import, negative = export)
+                    const interconnectorFlow = Math.round(-300 + Math.random() * 600);
+                    document.getElementById('interconnector').textContent = 
+                        (interconnectorFlow > 0 ? '+' : '') + interconnectorFlow + ' MW';
+                    
+                    // CO2 intensity based on renewable percentage
+                    const co2Intensity = Math.round(600 - (renewablePct * 4.5));
+                    document.getElementById('co2').textContent = Math.max(50, co2Intensity) + ' g/kWh';
+                    
+                    // Update timestamp
+                    updateTime();
+                    
+                }, 5000);
+
+                // Update stats more frequently for frequency (grid frequency changes rapidly)
+                setInterval(() => {
+                    const currentFreq = parseFloat(document.getElementById('frequency').textContent);
+                    const newFreq = Math.max(49.8, Math.min(50.2, 
+                        currentFreq + (Math.random() - 0.5) * 0.02));
+                    document.getElementById('frequency').textContent = newFreq.toFixed(2) + ' Hz';
+                }, 1000);
+            }
+
+            // Helper method to get layer statistics
+            getLayerStats() {
+                const stats = {
+                    totalLayers: Object.keys(this.dataFiles).length,
+                    loadedLayers: Object.keys(this.layers).length,
+                    activeLayers: this.activeLayerControls.size,
+                    errorLayers: this.errorLayers.size,
+                    loadingLayers: this.loadingLayers.size
+                };
+                
+                return stats;
+            }
+
+            // Method to export current map state (could be extended)
+            exportMapState() {
+                const state = {
+                    center: this.map.getCenter(),
+                    zoom: this.map.getZoom(),
+                    activeLayers: Array.from(this.activeLayerControls),
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('Current map state:', state);
+                return state;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                window.gridMap = new IrelandGridMap();
+                
+                // Add some debugging helpers
+                window.getMapStats = () => window.gridMap.getLayerStats();
+                window.exportState = () => window.gridMap.exportMapState();
+                
+                console.log('Ireland Grid Map initialized successfully');
+                console.log('Available debugging: window.getMapStats(), window.exportState()');
+            } catch (error) {
+                console.error('Failed to initialize Ireland Grid Map:', error);
+                document.getElementById('errorMessage').textContent = 'Failed to initialize map: ' + error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
